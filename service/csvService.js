@@ -13,19 +13,26 @@ const readFile = async(fileName) => {
         fs.createReadStream(fileName)
             .pipe(parse())
             .on('data', (data) => {
-                if(data != 'Metadata'){
+                if(data[1] != 'Metadata' && data[0] != 'Playtime'){
                     csvData.push(data);
                 }
             })
             .on('end', () => {
                 csvData.forEach(element => {
-                    let key = JSON.parse(element[0]);
-                    const row = {
-                        "fileName": key["filename"],
-                        "genre" : key["genre"],
-                        "director": key["director"]
+                    // console.log("playtime: ", element[0]);
+                    // console.log("element: ", element[1]);
+                    if(element[1]){
+                        let metadata = JSON.parse(element[1]);
+
+                        const row = {
+                            "playtime": element[0],
+                            "fileName": metadata["filename"],
+                            "cast": metadata["cast"],
+                            "genre" : metadata["genre"],
+                            "director": metadata["director"]
+                        }
+                        response.push(row);
                     }
-                    response.push(row);
                 });
                 resolve(response);
             })
@@ -33,6 +40,15 @@ const readFile = async(fileName) => {
     })
 }
 
+const saveFileToJson = async(json) => {
+    fs.writeFile('./processedCSV.json', json, 'utf8', function (err) {
+        if (err) {
+            return err;
+        }
+    });
+}
+
 module.exports = {
-    readFile
+    readFile,
+    saveFileToJson
 }

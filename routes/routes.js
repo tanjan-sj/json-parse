@@ -1,23 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const {readFile} = require("../service/csvService")
-const {parse} = require('csv-parse')
+const {readFile, saveFileToJson} = require("../service/csvService")
 
-const assert = require('assert');
-const fs = require('fs')
-const parser = parse({
-    delimiter: ','
-});
-
-const inputPath = "/Users/sumayajannat/Documents/petProjects/json-parse/test.csv";
+const inputPath = "./newDataset.csv";
 
 router.get('/test', async function (req, res, next) {
-    let responseBody = {};
-
     try{
-        responseBody = await readFile(inputPath);
-        console.log("responseBody: ", responseBody);
-        res.status(200).json(responseBody);
+        const responseBody = await readFile(inputPath);
+        const json = JSON.stringify(responseBody);
+
+        await saveFileToJson(json);
+        res.status(200).json({"msg": "successfully saved file"});
+
     }catch(error){
         console.log(error);
         res.status(error.statusCode || 500).json({ message: error.message });
